@@ -1,0 +1,30 @@
+{
+  "title": "Hintalaskin",
+  "venueSlug": "Paikan tunnus",
+  "cartValue": "Ostoksen arvo",
+  "latitude": "Käyttäjän leveysaste",
+  "longitude": "Käyttäjän pituusaste",
+  "getLocation": "Hanki sijainti",
+  "submitButton": "Laske toimitushinta",
+  "calculating": "Lasketaan...",
+  "priceBreakdown": {
+    "title": "Hinnan erittely",
+    "description": "Kuvaus",
+    "value": "Arvo",
+    "cartValue": "Ostoksen arvo",
+    "smallOrderSurcharge": "Pieni tilauksen lisämaksu",
+    "deliveryFee": "Toimitusmaksu",
+    "deliveryDistance": "Toimitusetäisyys",
+    "totalPrice": "Kokonaishinta"
+  },
+  "error": {
+    "validation": "Täytä kaikki vaaditut kentät kelvollisilla arvoilla.",
+    "locationPermission": "Lupa evätty. Salli sijaintiin pääsy.",
+    "locationSupport": "Geopaikannusta ei tueta selaimessasi.",
+    "positionUnavailable": "Sijaintitietoa ei saatavilla.",
+    "timeout": "Sijainnin hakeminen aikakatkaistiin.",
+    "unknown": "Tapahtui tuntematon virhe.",
+    "deliveryNotPossible": "Toimitus ei ole mahdollinen annetulle etäisyydelle.",
+    "serverError": "Toimitushinnan laskenta epäonnistui. Yritä uudelleen."
+  }
+}

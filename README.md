@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Delivery Order Price Calculator (DOPC)
 
-## Getting Started
+A simple Next.js (App Router) application that calculates delivery prices. It includes a bilingual interface (English and Finnish) and demonstrates how to integrate translations with [**next-intl**](https://github.com/amannn/next-intl). This project also supports containerization via Docker and testing with Cypress.
 
-First, run the development server:
+## Table of Contents
 
-```bash
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Tests (Cypress)](#tests-cypress)
+
+---
+
+## Features
+
+- **Next.js (App Router)** for modern React structure.
+- **Internationalization (i18n)** using [next-intl](https://github.com/amannn/next-intl) (English + Finnish).
+- **TypeScript** for type safety and maintainability.
+- **ESLint** for code linting and quality checks.
+- **Cypress** for end-to-end testing.
+
+---
+
+## Project Structure
+
+.
+├── app
+│ ├── favicon.ico
+│ └── [locale]
+│ ├── layout.tsx
+│ ├── page.module.css
+│ └── page.tsx
+├── components
+│ ├── InputField.module.css
+│ ├── InputField.tsx
+│ ├── InvisibleNavbar.module.css
+│ └── InvisibleNavbar.tsx
+├── cypress
+│ ├── e2e
+│ │ └── calculator.cy.js
+│ ├── fixtures
+│ │ └── example.json
+│ └── support
+│ ├── commands.ts
+│ └── e2e.ts
+├── cypress.config.ts
+├── docker-compose.yml
+├── Dockerfile
+├── i18n
+│ ├── request.ts
+│ └── routing.ts
+├── messages
+│ ├── en.json
+│ └── fi.json
+├── middleware.ts
+├── next.config.js
+├── next-env.d.ts
+├── package.json
+├── package-lock.json
+├── public
+│ └── background.svg
+├── README.md
+├── styles
+│ └── globals.css
+├── tsconfig.json
+└── utils
+├── apiCalls.ts
+└── helpers.ts
+
+## Getting started
+
+# Production mode
+
+In order to start this app you simple need to run the command "docker compose up" in project root. (I assume you have docker here) After this the webpage starts running at localhost at port 3000. It can used by simply going to http://localhost:3000.
+
+# Development mode
+
+This requires simply the combination of running npm install and npm run dev. In this mode you need to got to http://localhost:3000
+
+# Language
+
+This supports both english and finnish and the default language is determined based on your browser. Language can be changed at top right corner.
+
+## Tests (Cypress)
+
+We use Cypress for E2E tests.
+
+Start the dev server:
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open Cypress in interactive mode:
+npm run cypress:open
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+(Optional) Run in headless mode:
+npm run cypress:run
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Check the cypress/e2e folder for test specs.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Apologies for rushed readme

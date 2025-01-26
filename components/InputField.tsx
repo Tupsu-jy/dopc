@@ -51,6 +51,7 @@ const InputField: React.FC<InputFieldProps> = ({
         onChange={handleChange}
         placeholder=' '
         data-test-id={dataTestId}
+        autoComplete="on"
       />
       <label className={styles.inputLabel}>{label}</label>
     </div>

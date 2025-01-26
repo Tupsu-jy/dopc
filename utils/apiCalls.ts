@@ -1,17 +1,39 @@
 const venueApiUrl = "https://consumer-api.development.dev.woltapi.com/home-assignment-api/v1/venues/";
 
-export const getNeededVenueInfo = async (slug: string): Promise<{
-  coordinates: [number, number];
-  orderMinimumNoSurcharge: number;
-  basePrice: number;
-  distanceRanges: {
-    min: number;
-    max: number;
-    a: number;
-    b: number;
-    flag: any;
-  }[];
-}> => {
+/**
+ * Helper function to handle error responses from the fetch call
+ * @param response Response object from the fetch call
+ * @returns Error message based on the response status
+ */
+const handleResponseError = (response: Response): string => {
+  if (response.status === 404) {
+    return "Venue not found. Please check the venue slug.";
+  } else if (response.status >= 500) {
+    return "The server is currently unavailable. Please try again later.";
+  } else {
+    return "An unexpected error occurred. Please try again.";
+  }
+};
+/**
+ * Makes two api calls to fetch the static and dynamic data for a given venue slug
+ * @param slug Venue id string used in api call
+ * @returns Either the venue information or an error message
+ */
+export const getNeededVenueInfo = async (slug: string): Promise<
+  | {
+      coordinates: [number, number];
+      orderMinimumNoSurcharge: number;
+      basePrice: number;
+      distanceRanges: {
+        min: number;
+        max: number;
+        a: number;
+        b: number;
+        flag: any;
+      }[];
+    }
+  | string // Error message
+> => {
   try {
     const urlWithSlug = venueApiUrl + slug;
 
@@ -22,7 +44,7 @@ export const getNeededVenueInfo = async (slug: string): Promise<{
     });
 
     if (!staticResponse.ok) {
-      throw new Error(`Error fetching static data: ${staticResponse.status}`);
+      return handleResponseError(staticResponse);
     }
 
     const staticData = await staticResponse.json();
@@ -34,7 +56,7 @@ export const getNeededVenueInfo = async (slug: string): Promise<{
     });
 
     if (!dynamicResponse.ok) {
-      throw new Error(`Error fetching dynamic data: ${dynamicResponse.status}`);
+      return handleResponseError(dynamicResponse);
     }
 
     const dynamicData = await dynamicResponse.json();
@@ -56,7 +78,9 @@ export const getNeededVenueInfo = async (slug: string): Promise<{
       distanceRanges,
     };
   } catch (error) {
-    console.error("Error fetching venue information:", error);
-    throw error;
+    console.error("Unexpected error fetching venue information:", error);
+
+    // Return a generic error message for unexpected issues
+    return "An unexpected error occurred while fetching venue information. Please try again.";
   }
 };

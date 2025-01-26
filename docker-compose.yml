@@ -1,0 +1,10 @@
+services:
+  dopc:
+    build: .
+    container_name: delivery-order-price-calculator
+    # Map port 3000 inside the container to port 80 computer
+    ports:
+      - "3000:3000"
+    # Set environment variable for production mode
+    environment:
+      - NODE_ENV=production

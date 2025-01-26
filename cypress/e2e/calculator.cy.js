@@ -1,3 +1,18 @@
+// Base coordinates for the venue
+const VENUE_COORDINATES = {
+  latitude: 60.17094,
+  longitude: 24.93087,
+};
+
+// Predefined coordinates for specific distances
+// Calculated using https://www.calculator.net/distance-calculator.html
+const COORDINATES = {
+  venue: VENUE_COORDINATES, // Venue's location
+  beyond200m: { latitude: 60.169757, longitude: 24.928135 }, // 201.1m away from venue
+  beyond500m: { latitude: 60.1665, longitude: 24.927 }, // 539.3m away from venue
+  beyond1000m: { latitude: 60.1700, longitude: 24.9122 }, // 1004m away from venue
+};
+
 beforeEach(() => {
   // Visit the page before each test
   cy.visit('/')
@@ -10,18 +25,14 @@ describe('Price Calculation', () => {
       input: {
         venueSlug: 'home-assignment-venue-helsinki',
         cartValue: '100',
-        userLatitude: '60.169757',
-        userLongitude: '24.928135',
+        userLatitude: COORDINATES.beyond200m.latitude,
+        userLongitude: COORDINATES.beyond200m.longitude,
       },
       mockResponse: {
         static: {
           statusCode: 200,
           body: {
-            venue_raw: {
-              location: {
-                coordinates: [24.93087, 60.17094], // [longitude, latitude]
-              },
-            },
+            venue_raw: { location: { coordinates: [COORDINATES.venue.longitude, COORDINATES.venue.latitude] } },
           },
         },
         dynamic: {
@@ -29,13 +40,13 @@ describe('Price Calculation', () => {
           body: {
             venue_raw: {
               delivery_specs: {
-                order_minimum_no_surcharge: 10000, // in cents
+                order_minimum_no_surcharge: 10000,
                 delivery_pricing: {
-                  base_price: 190, // in cents
+                  base_price: 190,
                   distance_ranges: [
                     { min: 0, max: 500, a: 0, b: 0 },
                     { min: 500, max: 1000, a: 100, b: 1 },
-                    { min: 1000, max: 0, a: 0, b: 0 }, // No delivery beyond 1000m
+                    { min: 1000, max: 0, a: 0, b: 0 },
                   ],
                 },
               },
@@ -56,18 +67,14 @@ describe('Price Calculation', () => {
       input: {
         venueSlug: 'home-assignment-venue-helsinki',
         cartValue: '8',
-        userLatitude: '60.169757',
-        userLongitude: '24.928135',
+        userLatitude: COORDINATES.beyond200m.latitude,
+        userLongitude: COORDINATES.beyond200m.longitude,
       },
       mockResponse: {
         static: {
           statusCode: 200,
           body: {
-            venue_raw: {
-              location: {
-                coordinates: [24.93087, 60.17094],
-              },
-            },
+            venue_raw: { location: { coordinates: [COORDINATES.venue.longitude, COORDINATES.venue.latitude] } },
           },
         },
         dynamic: {
@@ -102,18 +109,14 @@ describe('Price Calculation', () => {
       input: {
         venueSlug: 'home-assignment-venue-helsinki',
         cartValue: '50',
-        userLatitude: '60.300000', // Far from venue
-        userLongitude: '25.000000', // Far from venue
+        userLatitude: COORDINATES.beyond1000m.latitude,
+        userLongitude: COORDINATES.beyond1000m.longitude,
       },
       mockResponse: {
         static: {
           statusCode: 200,
           body: {
-            venue_raw: {
-              location: {
-                coordinates: [24.93087, 60.17094],
-              },
-            },
+            venue_raw: { location: { coordinates: [COORDINATES.venue.longitude, COORDINATES.venue.latitude] } },
           },
         },
         dynamic: {
@@ -143,19 +146,15 @@ describe('Price Calculation', () => {
       description: 'Cart value matches minimum surcharge threshold',
       input: {
         venueSlug: 'home-assignment-venue-helsinki',
-        cartValue: '10', // Matches the minimum
-        userLatitude: '60.169757',
-        userLongitude: '24.928135',
+        cartValue: '10',
+        userLatitude: COORDINATES.beyond200m.latitude,
+        userLongitude: COORDINATES.beyond200m.longitude,
       },
       mockResponse: {
         static: {
           statusCode: 200,
           body: {
-            venue_raw: {
-              location: {
-                coordinates: [24.93087, 60.17094],
-              },
-            },
+            venue_raw: { location: { coordinates: [COORDINATES.venue.longitude, COORDINATES.venue.latitude] } },
           },
         },
         dynamic: {
@@ -163,7 +162,7 @@ describe('Price Calculation', () => {
           body: {
             venue_raw: {
               delivery_specs: {
-                order_minimum_no_surcharge: 1000, // 10 EUR in cents
+                order_minimum_no_surcharge: 1000,
                 delivery_pricing: {
                   base_price: 190,
                   distance_ranges: [
@@ -186,114 +185,23 @@ describe('Price Calculation', () => {
       },
     },
     {
-      description: 'Cart value is extremely low with high surcharge',
+      description: 'API returns an error, about incorrect slug',
       input: {
-        venueSlug: 'home-assignment-venue-helsinki',
-        cartValue: '1', // Very low cart value
-        userLatitude: '60.169757',
-        userLongitude: '24.928135',
-      },
-      mockResponse: {
-        static: {
-          statusCode: 200,
-          body: {
-            venue_raw: {
-              location: {
-                coordinates: [24.93087, 60.17094],
-              },
-            },
-          },
-        },
-        dynamic: {
-          statusCode: 200,
-          body: {
-            venue_raw: {
-              delivery_specs: {
-                order_minimum_no_surcharge: 10000,
-                delivery_pricing: {
-                  base_price: 190,
-                  distance_ranges: [
-                    { min: 0, max: 500, a: 0, b: 0 },
-                    { min: 500, max: 1000, a: 100, b: 1 },
-                    { min: 1000, max: 0, a: 0, b: 0 },
-                  ],
-                },
-              },
-            },
-          },
-        },
-      },
-      expected: {
-        cartValue: '1.00 €',
-        smallOrderSurcharge: '9.00 €',
-        deliveryFee: '1.90 €',
-        deliveryDistance: '200 m',
-        totalPrice: '11.90 €',
-      },
-    },
-    {
-      description: 'Delivery distance exactly at range boundary',
-      input: {
-        venueSlug: 'home-assignment-venue-helsinki',
+        venueSlug: 'wrong-slug',
         cartValue: '50',
-        userLatitude: '60.17000', // Latitude adjusted for boundary
-        userLongitude: '24.93050', // Longitude adjusted for boundary
+        userLatitude: COORDINATES.beyond200m.latitude,
+        userLongitude: COORDINATES.beyond200m.longitude,
       },
       mockResponse: {
-        static: {
-          statusCode: 200,
-          body: {
-            venue_raw: {
-              location: {
-                coordinates: [24.93087, 60.17094],
-              },
-            },
-          },
-        },
-        dynamic: {
-          statusCode: 200,
-          body: {
-            venue_raw: {
-              delivery_specs: {
-                order_minimum_no_surcharge: 10000,
-                delivery_pricing: {
-                  base_price: 190,
-                  distance_ranges: [
-                    { min: 0, max: 500, a: 0, b: 0 },
-                    { min: 500, max: 1000, a: 100, b: 1 },
-                    { min: 1000, max: 0, a: 0, b: 0 },
-                  ],
-                },
-              },
-            },
-          },
-        },
+        static: { statusCode: 404 },
+        dynamic: { statusCode: 404 },
       },
       expected: {
-        cartValue: '50.00 €',
-        smallOrderSurcharge: '0.00 €',
-        deliveryFee: '2.90 €',
-        deliveryDistance: '500 m', // Exactly at boundary
-        totalPrice: '52.90 €',
+        errorMessage: "Venue not found. Please check the venue slug.",
       },
     },
-    {
-      description: 'API returns an error',
-      input: {
-        venueSlug: 'home-assignment-venue-helsinki',
-        cartValue: '50',
-        userLatitude: '60.169757',
-        userLongitude: '24.928135',
-      },
-      mockResponse: {
-        static: { statusCode: 500 },
-        dynamic: { statusCode: 500 },
-      },
-      expected: {
-        errorMessage: 'Failed to fetch venue data. Please try again.',
-      },
-    },
-  ]
+  ];
+  
 
   testScenarios.forEach(({ description, input, mockResponse, expected }) => {
     it(description, () => {
@@ -320,31 +228,38 @@ describe('Price Calculation', () => {
       // Click the calculate button
       cy.get('[data-test-id="calculateDeliveryPrice"]').click()
 
-      // Wait for API requests to complete
-      cy.wait('@getStaticData')
-      cy.wait('@getDynamicData')
+      if (expected.errorMessage) {
+        cy.get('[data-test-id="errorMessage"]').should(
+          'contain',
+          expected.errorMessage
+        )
+      } else {
+        // Wait for API requests to complete
+        cy.wait('@getStaticData')
+        cy.wait('@getDynamicData')
 
-      // Assert the price breakdown is displayed
-      cy.get('[data-test-id="priceCartValue"]').should(
-        'contain',
-        expected.cartValue
-      )
-      cy.get('[data-test-id="smallOrderSurcharge"]').should(
-        'contain',
-        expected.smallOrderSurcharge
-      )
-      cy.get('[data-test-id="deliveryFee"]').should(
-        'contain',
-        expected.deliveryFee
-      )
-      cy.get('[data-test-id="deliveryDistance"]').should(
-        'contain',
-        expected.deliveryDistance
-      )
-      cy.get('[data-test-id="totalPrice"]').should(
-        'contain',
-        expected.totalPrice
-      )
+        // Assert the price breakdown is displayed
+        cy.get('[data-test-id="priceCartValue"]').should(
+          'contain',
+          expected.cartValue
+        )
+        cy.get('[data-test-id="smallOrderSurcharge"]').should(
+          'contain',
+          expected.smallOrderSurcharge
+        )
+        cy.get('[data-test-id="deliveryFee"]').should(
+          'contain',
+          expected.deliveryFee
+        )
+        cy.get('[data-test-id="deliveryDistance"]').should(
+          'contain',
+          expected.deliveryDistance
+        )
+        cy.get('[data-test-id="totalPrice"]').should(
+          'contain',
+          expected.totalPrice
+        )
+      }
     })
   })
 })

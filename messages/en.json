@@ -1,0 +1,30 @@
+{
+  "title": "Price Calculator",
+  "venueSlug": "Venue Slug",
+  "cartValue": "Cart Value",
+  "latitude": "User Latitude",
+  "longitude": "User Longitude",
+  "getLocation": "Get Location",
+  "submitButton": "Calculate Delivery Price",
+  "calculating": "Calculating...",
+  "priceBreakdown": {
+    "title": "Price Breakdown",
+    "description": "Description",
+    "value": "Value",
+    "cartValue": "Cart Value",
+    "smallOrderSurcharge": "Small Order Surcharge",
+    "deliveryFee": "Delivery Fee",
+    "deliveryDistance": "Delivery Distance",
+    "totalPrice": "Total Price"
+  },
+  "error": {
+    "validation": "Please fill in all required fields with valid values.",
+    "locationPermission": "Permission denied. Please allow location access.",
+    "locationSupport": "Geolocation is not supported by your browser.",
+    "positionUnavailable": "Location information is unavailable.",
+    "timeout": "The request to get user location timed out.",
+    "unknown": "An unknown error occurred.",
+    "deliveryNotPossible": "Delivery is not possible for the given distance.",
+    "serverError": "Failed to calculate the delivery price. Please try again."
+  }
+}

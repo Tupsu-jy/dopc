@@ -1,12 +1,16 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import InputField from '@/components/InputField'
 import { getNeededVenueInfo } from '@/utils/apiCalls'
 import { haversineDistance } from '@/utils/helpers'
 import styles from './page.module.css'
 
 const CalculatorForm = () => {
+  // i18 Translation
+  const t = useTranslations()
+
   // State for each input field value
   const [venueValue, setVenueValue] = useState('')
   const [cartValue, setCartValue] = useState('')
@@ -20,7 +24,7 @@ const CalculatorForm = () => {
   const [longitudeError, setLongitudeError] = useState(false)
 
   // State for the information shown to the user
-  const [deliveryFee, setDeliveryFee] = useState('')
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [priceBreakdown, setPriceBreakdown] = useState({
     cartValue: '',
@@ -36,9 +40,10 @@ const CalculatorForm = () => {
   const handleLatitudeChange = (value: string) => setUserLatitude(value)
   const handleLongitudeChange = (value: string) => setUserLongitude(value)
 
+  // Get user's location
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser.')
+      setError(t('error.locationSupport'))
       return
     }
 
@@ -52,22 +57,24 @@ const CalculatorForm = () => {
       (error) => {
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            setError('Permission denied. Please allow location access.')
+            setError(t('error.locationPermission'))
             break
           case error.POSITION_UNAVAILABLE:
-            setError('Location information is unavailable.')
+            setError(t('error.positionUnavailable'))
             break
           case error.TIMEOUT:
-            setError('The request to get user location timed out.')
+            setError(t('error.timeout'))
             break
           default:
-            setError('An unknown error occurred.')
+            setError(t('error.unknown'))
             break
         }
       }
     )
   }
 
+  // Handle form submission. Gets the order information based on the user's input
+  // and data that is fetched from the API in this function.
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
 
@@ -95,19 +102,30 @@ const CalculatorForm = () => {
     }
 
     if (hasError) {
-      setError('Please fill in all required fields with valid values.')
+      setError(t('error.validation'))
       return
     }
 
     // Clear error messages and show calculation progress
     setError('')
-    setDeliveryFee('Calculating...')
+    setPriceBreakdown({
+      cartValue: '',
+      smallOrderSurcharge: '',
+      deliveryFee: '',
+      deliveryDistance: '',
+      totalPrice: '',
+    })
+    setLoading(true)
 
     try {
-      // Fetch venue information
       const venueInfo = await getNeededVenueInfo(venueValue)
 
-      // Extract data from venueInfo
+      if (typeof venueInfo === 'string') {
+        setError(venueInfo)
+        setLoading(false)
+        return
+      }
+
       const {
         coordinates,
         orderMinimumNoSurcharge,
@@ -115,31 +133,27 @@ const CalculatorForm = () => {
         distanceRanges,
       } = venueInfo
 
-      // Calculate the delivery distance (straight line)
       const [venueLongitude, venueLatitude] = coordinates
       const distance = haversineDistance(
         parseFloat(userLatitude),
-        parseFloat(userLongitude), // User coordinate
+        parseFloat(userLongitude),
         venueLatitude,
-        venueLongitude // Venue coordinates
+        venueLongitude
       )
 
-      // Check if delivery is possible (distance exceeds max range)
       const lastRange = distanceRanges[distanceRanges.length - 1]
       if (distance >= lastRange.min && lastRange.max === 0) {
-        setError('Delivery is not possible for the given distance.')
-        setDeliveryFee('')
+        setError(t('error.deliveryNotPossible'))
+        setLoading(false)
         return
       }
 
-      // Calculate small order surcharge
       const cartValueInCents = Math.round(parseFloat(cartValue) * 100)
       const smallOrderSurcharge = Math.max(
         orderMinimumNoSurcharge - cartValueInCents,
         0
       )
 
-      // Calculate delivery fee
       let deliveryFee = basePrice
       for (const range of distanceRanges) {
         if (distance >= range.min && distance < range.max) {
@@ -148,10 +162,8 @@ const CalculatorForm = () => {
         }
       }
 
-      // Calculate total price
       const totalPrice = cartValueInCents + smallOrderSurcharge + deliveryFee
 
-      // Update state with calculated values
       setPriceBreakdown({
         cartValue: (cartValueInCents / 100).toFixed(2) + ' €',
         smallOrderSurcharge: (smallOrderSurcharge / 100).toFixed(2) + ' €',
@@ -159,21 +171,20 @@ const CalculatorForm = () => {
         deliveryDistance: Math.round(distance) + ' m',
         totalPrice: (totalPrice / 100).toFixed(2) + ' €',
       })
-      setDeliveryFee('')
-      setError('')
-    } catch (err) {
-      console.error('Error calculating delivery fee:', err)
-      setError('Failed to calculate the delivery price. Please try again.')
-      setDeliveryFee('')
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setError(t('error.serverError'))
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
     <div className={styles.calculatorContainer}>
       <form onSubmit={handleSubmit} className={styles.formContainer}>
-        <h1>Price Calculator</h1>
+        <h1>{t('title')}</h1>
         <InputField
-          label='Venue Slug'
+          label={t('venueSlug')}
           onChange={handleVenueChange}
           value={venueValue}
           dataTestId='venueSlug'
@@ -182,7 +193,7 @@ const CalculatorForm = () => {
           setHasError={setVenueError}
         />
         <InputField
-          label='Cart Value'
+          label={t('cartValue')}
           onChange={handleCartChange}
           value={cartValue}
           dataTestId='cartValue'
@@ -191,7 +202,7 @@ const CalculatorForm = () => {
           setHasError={setCartError}
         />
         <InputField
-          label='User Latitude'
+          label={t('latitude')}
           onChange={handleLatitudeChange}
           value={userLatitude}
           dataTestId='userLatitude'
@@ -200,7 +211,7 @@ const CalculatorForm = () => {
           setHasError={setLatitudeError}
         />
         <InputField
-          label='User Longitude'
+          label={t('longitude')}
           onChange={handleLongitudeChange}
           value={userLongitude}
           dataTestId='userLongitude'
@@ -209,65 +220,102 @@ const CalculatorForm = () => {
           setHasError={setLongitudeError}
         />
         <button
+          aria-label={t('getLocation')}
           className={styles.button}
           type='button'
           data-test-id='getLocation'
           onClick={handleGetLocation}
         >
-          Get Location
+          {t('getLocation')}
         </button>
         <button
+          aria-label={t('submitButton')}
           className={styles.button}
           type='submit'
           data-test-id='calculateDeliveryPrice'
+          disabled={loading}
+          aria-busy={loading}
         >
-          Calculate Delivery Price
+          {loading ? t('calculating') : t('submitButton')}
         </button>
       </form>
 
+      {/* Error Message */}
+      {error && (
+        <div
+          data-test-id='errorMessage'
+          className={styles.error}
+          aria-live='assertive'
+        >
+          {error}
+        </div>
+      )}
+      {/* Placeholder */}
+      {loading && (
+        <div className={styles.loading}>
+          <div className={styles.spinner}></div>
+          {t('calculating')}
+        </div>
+      )}
+
       {/* Price Breakdown */}
       {priceBreakdown.totalPrice && (
-        <div className={styles.priceBreakdown}>
-          <h2>Price Breakdown</h2>
-          <table>
+        <div className={styles.priceBreakdown} aria-live='polite'>
+          <h2 id='priceBreakdownHeading'>{t('priceBreakdown.title')}</h2>
+          <table aria-labelledby='priceBreakdownHeading'>
+            <thead>
+              <tr>
+                <th scope='col'>{t('priceBreakdown.description')}</th>
+                <th scope='col'>{t('priceBreakdown.value')}</th>
+              </tr>
+            </thead>
             <tbody>
               <tr>
-                <td>Cart Value:</td>
+                <td scope='row' aria-label={t('priceBreakdown.cartValue')}>
+                  {t('priceBreakdown.cartValue')}
+                </td>
                 <td data-test-id='priceCartValue'>
                   {priceBreakdown.cartValue}
                 </td>
               </tr>
               <tr>
-                <td>Small Order Surcharge:</td>
+                <td
+                  scope='row'
+                  aria-label={t('priceBreakdown.smallOrderSurcharge')}
+                >
+                  {t('priceBreakdown.smallOrderSurcharge')}
+                </td>
                 <td data-test-id='smallOrderSurcharge'>
                   {priceBreakdown.smallOrderSurcharge}
                 </td>
               </tr>
               <tr>
-                <td>Delivery Fee:</td>
+                <td scope='row' aria-label={t('priceBreakdown.deliveryFee')}>
+                  {t('priceBreakdown.deliveryFee')}
+                </td>
                 <td data-test-id='deliveryFee'>{priceBreakdown.deliveryFee}</td>
               </tr>
               <tr>
-                <td>Delivery Distance:</td>
+                <td
+                  scope='row'
+                  aria-label={t('priceBreakdown.deliveryDistance')}
+                >
+                  {t('priceBreakdown.deliveryDistance')}
+                </td>
                 <td data-test-id='deliveryDistance'>
                   {priceBreakdown.deliveryDistance}
                 </td>
               </tr>
-              <tr>
-                <td>
-                  <strong>Total Price:</strong>
+              <tr className={styles.total}>
+                <td scope='row' aria-label={t('priceBreakdown.totalPrice')}>
+                  {t('priceBreakdown.totalPrice')}
                 </td>
-                <td data-test-id='totalPrice'>
-                  <strong>{priceBreakdown.totalPrice}</strong>
-                </td>
+                <td data-test-id='totalPrice'>{priceBreakdown.totalPrice}</td>
               </tr>
             </tbody>
           </table>
         </div>
       )}
-
-      {/* Error Message */}
-      {error && <div className={styles.errorMessage}>{error}</div>}
     </div>
   )
 }

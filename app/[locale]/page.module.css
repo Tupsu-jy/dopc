@@ -6,6 +6,7 @@
   max-width: 400px;
   margin: auto;
   margin-top: 5%;
+  padding: 20px;
   }
 
 .formContainer {
@@ -26,11 +27,11 @@
 
 .error {
   color: var(--error-color);
-  font-size: 0.8rem;
+  font-size: 1.2rem;
 }
 
 .button {
-  width: 90%;
+  width: 100%;
   background-color: var(--blue);
   /* Blue background */
   color: white;
@@ -53,7 +54,7 @@
   /* Smooth background color transition */
 }
 
-.button:hover {
+.button:hover, .button:focus {
   background-color: var(--dark-blue);
   /* Darker blue on hover */
 }
@@ -62,11 +63,10 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   /* Smaller shadow when pressed */
 }
+
 .priceBreakdown {
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
 }
 
 .priceBreakdown table {
@@ -75,17 +75,53 @@
   margin-top: 10px;
 }
 
+.priceBreakdown th {
+  padding: 5px 0 15px;
+  font-size: 20px;
+  color: #333;
+}
+
 .priceBreakdown td {
   padding: 5px 0;
   font-size: 16px;
   color: #333;
 }
 
-.priceBreakdown td:first-child {
-  font-weight: bold;
+.priceBreakdown :first-child {
   text-align: left;
 }
 
-.priceBreakdown td:last-child {
+.priceBreakdown :last-child {
   text-align: right;
+}
+
+.total td {
+  padding: 15px 0 0 0; /* Increase padding for the total row */
+  font-weight: bold;
+  font-size: 20px;
+  border-top: 2px solid #333; /* Add a prominent border above the total row */
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--dark-blue);
+  gap: 10px;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--dark-blue);
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
